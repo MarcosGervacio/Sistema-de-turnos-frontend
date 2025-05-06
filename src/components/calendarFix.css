@@ -1,0 +1,10 @@
+/* Elimina estilos rojos */
+.react-calendar__month-view__days__day--weekend {
+    color: inherit;
+  }
+  
+  /* Día con al menos un turno */
+  .dia-con-turno abbr {
+    color: green;
+    font-weight: bold;
+  }
