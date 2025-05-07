@@ -15,11 +15,28 @@ const Dashboard = () => {
     const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
     const [turnosDisponibles, setTurnosDisponibles] = useState([]);
     const [fechasConTurnos, setFechasConTurnos] = useState([]);
-
+    const [domicilio, setDomicilio] = useState("");
+    const [servicioId, setServicioId] = useState("");
 
     if (!user) {
         return <p>No autorizado. Por favor, inicia sesión.</p>;
     }
+
+    const reservarTurno = async (idTurno) => {
+        try {
+            const response = await axios.post(`http://localhost:8081/api/turno/reservar/${idTurno}`, {
+              domicilio: domicilio,
+              servicioId: servicioId
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            alert("Turno reservado con éxito");
+        } catch (error) {
+            console.error('Error al reservar el turno', error);
+        }
+    };
 
     useEffect(() => {
         const fetchTurnos = async () => {
@@ -55,11 +72,12 @@ const Dashboard = () => {
         };
     
         fetchFechas();
-      }, []);
+      }, [fechaSeleccionada]);
 
     return (
         <>
-        <h1>HOLA</h1>
+        <button onClick={() => navigate("/MisTurnos")}>Mis turnos</button>
+        <h1>HOLA {user.id}</h1>
         <button onClick={() => { logout(); navigate("/"); }}>Cerrar Sesión</button>
 
         <div>
@@ -68,6 +86,26 @@ const Dashboard = () => {
         const fechaStr = date.toISOString().split('T')[0];
         return fechasConTurnos.includes(fechaStr) ? 'dia-con-turno' : null;
       }}/>
+
+      <br /><br />
+
+      <span>Domicilio: </span>
+      <input
+        type="text"
+        placeholder="Domicilio"
+        value={domicilio}
+        onChange={(e) => setDomicilio(e.target.value)}
+      />
+      <br /><br />
+
+      <span>Servicio: </span>
+      <select onChange={(e) => setServicioId(e.target.value)} value={servicioId}>
+        <option value="">Seleccionar servicio</option>
+        <option value="1">Corte de pelo</option>
+        <option value="1">Peinado</option>
+        <option value="1">Tintura</option>
+      </select>
+
 
       <h3>Turnos disponibles para {fechaSeleccionada.toLocaleDateString()}:</h3>
       <ul>

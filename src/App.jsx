@@ -4,6 +4,7 @@ import Login from "./components/Login";
 import { useContext } from "react";
 import Registro from "./components/Registro";
 import Dashboard from "./components/Dashboard";
+import MisTurnos from "./components/MisTurnos";
 import './App.css'
 
 
@@ -22,6 +23,7 @@ function App() {
                     <Route exact path="/" element={<Login />} />
                     <Route exact path="/registro" element={<Registro />} />
                     <Route exact path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+                    <Route exact path="/MisTurnos" element={<PrivateRoute><MisTurnos /></PrivateRoute>} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>
