@@ -18,10 +18,6 @@ const Dashboard = () => {
     const [domicilio, setDomicilio] = useState("");
     const [servicioId, setServicioId] = useState("");
 
-    if (!user) {
-        return <p>No autorizado. Por favor, inicia sesión.</p>;
-    }
-
     const reservarTurno = async (idTurno) => {
         try {
             const response = await axios.post(`http://localhost:8081/api/turno/reservar/${idTurno}`, {
@@ -33,50 +29,73 @@ const Dashboard = () => {
                 }
             });
             alert("Turno reservado con éxito");
+            fetchTurnos();
+            fetchFechas();
         } catch (error) {
             console.error('Error al reservar el turno', error);
         }
     };
 
-    useEffect(() => {
-        const fetchTurnos = async () => {
-          const fecha = fechaSeleccionada.toISOString().split('T')[0]; // formato yyyy-mm-dd
-          try {
-            const response = await axios.get(`http://localhost:8081/api/turno/disponiblesPorFecha?fecha=${fecha}`, {
+    const eliminarTurno = async (idTurno) => {
+        try {
+            const response = await axios.delete(`http://localhost:8081/api/turno/${idTurno}`, {
                 headers: {
-                  Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${token}`
                 }
-              });
-            setTurnosDisponibles(response.data);
-          } catch (error) {
-            console.error('Error al obtener turnos', error);
+            });
+            alert("Turno eliminado con éxito");
+            fetchTurnos();
+            fetchFechas();
+        } catch (error) {
+            console.error('Error al eliminar el turno', error);
+        }
+    }
+
+
+    const fetchTurnos = async () => {
+      const fecha = fechaSeleccionada.toISOString().split('T')[0]; // formato yyyy-mm-dd
+      try {
+        const response = await axios.get(`http://localhost:8081/api/turno/disponiblesPorFecha?fecha=${fecha}`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+        setTurnosDisponibles(response.data);
+      } catch (error) {
+        console.error('Error al obtener turnos', error);
+      }
+    };
+
+    const fetchFechas = async () => {
+      try {
+        const response = await fetch('http://localhost:8081/api/turno/fechas', {
+          headers: {
+            Authorization: `Bearer ${token}`
           }
-        };
-    
+        });
+        const fechas = await response.json(); // ejemplo: ['2025-05-06', '2025-05-08']
+        setFechasConTurnos(fechas);
+      } catch (error) {
+        console.error("Error al obtener fechas con turnos", error);
+      }
+    };
+
+    useEffect(() => {    
         fetchTurnos();
       }, [fechaSeleccionada]);
 
-      useEffect(() => {
-        const fetchFechas = async () => {
-          try {
-            const response = await fetch('http://localhost:8081/api/turno/fechas', {
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
-            });
-            const fechas = await response.json(); // ejemplo: ['2025-05-06', '2025-05-08']
-            setFechasConTurnos(fechas);
-          } catch (error) {
-            console.error("Error al obtener fechas con turnos", error);
-          }
-        };
-    
+      useEffect(() => {    
         fetchFechas();
       }, [fechaSeleccionada]);
 
     return (
         <>
-        <button onClick={() => navigate("/MisTurnos")}>Mis turnos</button>
+        {user.role == "ROLE_ADMIN" ? (
+          <button onClick={() => navigate("/Administracion")}>Administracion</button>
+        ) : null}
+        {user.role == "ROLE_USER" ? (
+          <button onClick={() => navigate("/MisTurnos")}>Mis turnos</button>
+        ) : null}
         <h1>HOLA {user.id}</h1>
         <button onClick={() => { logout(); navigate("/"); }}>Cerrar Sesión</button>
 
@@ -106,7 +125,6 @@ const Dashboard = () => {
         <option value="1">Tintura</option>
       </select>
 
-
       <h3>Turnos disponibles para {fechaSeleccionada.toLocaleDateString()}:</h3>
       <ul>
         {turnosDisponibles.length === 0 ? (
@@ -117,6 +135,9 @@ const Dashboard = () => {
               {new Date(turno.fechaTurno).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               <span>HS</span>
               <button onClick={() => reservarTurno(turno.id)}>Reservar</button>
+              {user.role == "ROLE_ADMIN" ? (
+                <button onClick={() => eliminarTurno(turno.id)}>Eliminar</button>
+              ) : null}
             </li>
           ))
         )}

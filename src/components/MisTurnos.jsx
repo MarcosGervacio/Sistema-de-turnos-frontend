@@ -61,9 +61,7 @@ useEffect(() => {
                 <p>Estado: {turno.estado}</p>
                 {turno.estado === "reservado" ? (
                 <button onClick={() => cancelarTurno(turno.id)}>Cancelar</button>
-                ) : (
-                <p>turno no gestionable</p>
-                )}
+                ) : null}
             </li>
           ))
         )}
